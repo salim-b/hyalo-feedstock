@@ -19,23 +19,27 @@ build:
       - cd crates/hyalo-cli
       - if: unix
         then:
-          - cargo auditable install --locked --no-track --bins --root ${{ PREFIX }} --path .
+          - cargo auditable install --path=. --root="$PREFIX" --no-track --locked --bins
           # generate shell completions
-          - mkdir -p $PREFIX/share/bash-completion/completions $PREFIX/share/fish/vendor_completions.d $PREFIX/share/zsh/site-functions
-          - $PREFIX/bin/hyalo completion bash > $PREFIX/share/bash-completion/completions/hyalo
-          - $PREFIX/bin/hyalo completion fish > $PREFIX/share/fish/vendor_completions.d/hyalo.fish
-          - $PREFIX/bin/hyalo completion zsh > $PREFIX/share/zsh/site-functions/_hyalo
+          - if: build_platform == host_platform
+            then:
+              - mkdir -p "$PREFIX"/share/bash-completion/completions "$PREFIX"/share/fish/vendor_completions.d "$PREFIX"/share/zsh/site-functions
+              - '"$PREFIX"/bin/hyalo completion bash > "$PREFIX"/share/bash-completion/completions/hyalo'
+              - '"$PREFIX"/bin/hyalo completion fish > "$PREFIX"/share/fish/vendor_completions.d/hyalo.fish'
+              - '"$PREFIX"/bin/hyalo completion zsh  > "$PREFIX"/share/zsh/site-functions/_hyalo'
       - if: win
         then:
-          - cargo auditable install --locked --no-track --bins --root %LIBRARY_PREFIX% --path .
+          - cargo auditable install --path=. --root="%LIBRARY_PREFIX%" --no-track --locked --bins
           # generate shell completions
-          - mkdir %LIBRARY_PREFIX%\share\bash-completion\completions
-          - mkdir %LIBRARY_PREFIX%\share\fish\vendor_completions.d
-          - mkdir %LIBRARY_PREFIX%\share\zsh\site-functions
-          - '%LIBRARY_BIN%\hyalo.exe completion bash > %LIBRARY_PREFIX%\share\bash-completion\completions\hyalo'
-          - '%LIBRARY_BIN%\hyalo.exe completion fish > %LIBRARY_PREFIX%\share\fish\vendor_completions.d\hyalo.fish'
-          - '%LIBRARY_BIN%\hyalo.exe completion zsh > %LIBRARY_PREFIX%\share\zsh\site-functions\_hyalo'
-      - cargo-bundle-licenses --format yaml --output ../../THIRDPARTY.yml
+          - if: build_platform == host_platform
+            then:
+              - mkdir "%LIBRARY_PREFIX%"\share\bash-completion\completions
+              - mkdir "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d
+              - mkdir "%LIBRARY_PREFIX%"\share\zsh\site-functions
+              - '"%LIBRARY_BIN%"\hyalo.exe completion bash > "%LIBRARY_PREFIX%"\share\bash-completion\completions\hyalo'
+              - '"%LIBRARY_BIN%"\hyalo.exe completion fish > "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d\hyalo.fish'
+              - '"%LIBRARY_BIN%"\hyalo.exe completion zsh  > "%LIBRARY_PREFIX%"\share\zsh\site-functions\_hyalo'
+      - cargo-bundle-licenses --format=yaml --output=../../THIRDPARTY.yml
 
 requirements:
   build:
@@ -53,12 +57,12 @@ tests:
       bin:
         - hyalo
       files:
-        - if: unix
+        - if: unix and build_platform == host_platform
           then:
             - share/bash-completion/completions/hyalo
             - share/fish/vendor_completions.d/hyalo.fish
             - share/zsh/site-functions/_hyalo
-        - if: win
+        - if: win and build_platform == host_platform
           then:
             - Library/share/bash-completion/completions/hyalo
             - Library/share/fish/vendor_completions.d/hyalo.fish
